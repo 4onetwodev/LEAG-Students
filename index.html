@@ -58,7 +58,7 @@
 <div id="screen-home" class="screen active">
   <div style="max-width:480px;margin:0 auto;padding:1rem 1.5rem">
     <div style="margin-bottom:2.5rem;text-align:center">
-      <p style="font-size:12px;color:var(--primary);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:600">Company Program</p>
+      <p style="font-size:12px;color:var(--primary);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:600">Matelec Program</p>
       <h1>Time Management Tracker</h1>
       <p style="color:var(--text-muted);font-size:15px;margin-top:8px">Log your day and discover where your time really goes.</p>
     </div>
@@ -164,7 +164,7 @@
     <div class="tab-bar">
       <button class="tab active" onclick="switchTab('submissions',this)">Submissions</button>
       <button class="tab" onclick="switchTab('individual',this)">Individual Reports</button>
-      <button class="tab" onclick="switchTab('aggregate',this)">Company Overview</button>
+      <button class="tab" onclick="switchTab('aggregate',this)">Matelec Overview</button>
     </div>
     <div id="tab-submissions"></div>
     <div id="tab-individual" style="display:none"></div>
@@ -392,7 +392,7 @@ function renderIndividualTab() {
 
 function renderAggregateTab() {
   const el = document.getElementById("tab-aggregate");
-  if (!aggregateAnalysis) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">Run the analysis to see the company overview.</p>`; return; }
+  if (!aggregateAnalysis) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">Run the analysis to see the Matelec overview.</p>`; return; }
   const allSlots = submissions.flatMap(s=>s.slots);
   const catTotals={};
   allSlots.forEach(sl=>{
@@ -415,7 +415,7 @@ function renderAggregateTab() {
   }).join("");
   el.innerHTML=`
     <div class="card" style="margin-bottom:24px">
-      <h3 style="margin-bottom:16px">Company Task Distribution</h3>
+      <h3 style="margin-bottom:16px">Matelec Task Distribution</h3>
       <div style="margin-bottom:8px;padding-right:20px">${bars}</div>
     </div>
     <div class="analysis-box" style="margin-bottom:24px">${formatAnalysis(aggregateAnalysis)}</div>`;
@@ -500,18 +500,18 @@ Keep tone warm, coaching-style, specific, and motivating. Use exact names of tas
     const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
     const catBreakdown=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`${c}: ${fmtMins(m)} (${total>0?Math.round(m/total*100):0}%)`).join("\n");
 
-    const aggPrompt = `You are a corporate time management consultant. Below is aggregated anonymous data from ${submissions.length} participants in the company.
+    const aggPrompt = `You are a corporate time management consultant. Below is aggregated anonymous data from ${submissions.length} participants at Matelec.
 
-Task Type breakdown across the company:
+Task Type breakdown across Matelec:
 ${catBreakdown}
 
-Provide a full company-level report with:
+Provide a full Matelec-level report with:
 1. **Where time is most wasted** – top patterns with data and percentages
-2. **Common weak spots** – behaviors seen across the company workflow
-3. **Company productivity overview** – general honest assessment
+2. **Common weak spots** – behaviors seen across the Matelec workflow
+3. **Matelec productivity overview** – general honest assessment
 4. **Distribution analysis** – how time is split between potentially productive vs unproductive activities
-5. **3 company focus areas** – specific structural or workflow topics to address
-6. **Recommended action** – one collective challenge for the company
+5. **3 Matelec focus areas** – specific structural or workflow topics to address
+6. **Recommended action** – one collective challenge for Matelec
 
 Be analytical, specific, and use the data. Do NOT invent or mention any individual names. Ensure this is completely anonymous.`;
 
