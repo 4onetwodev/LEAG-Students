@@ -5,41 +5,44 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Time Management Tracker — LEAG</title>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+  :root { --bg: #0f1014; --fg: #f3f4f6; --card: #181a20; --border: #2c2f38; --primary: #3b82f6; --input-bg: #21242d; --text-muted: #9ca3af; --danger: #ef4444; }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a18;min-height:100vh;font-size:15px;line-height:1.6}
-  h1{font-size:22px;font-weight:500}
-  h2{font-size:18px;font-weight:500}
-  h3{font-size:15px;font-weight:500}
-  input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid #ccc;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;transition:border .15s}
-  input:focus,select:focus,textarea:focus{border-color:#555}
-  button{padding:9px 18px;border:0.5px solid #bbb;border-radius:8px;background:#fff;font-size:14px;font-family:inherit;cursor:pointer;transition:background .15s}
-  button:hover{background:#f0eeea}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;font-size:15px;line-height:1.6}
+  h1{font-size:26px;font-weight:600;letter-spacing:-0.5px}
+  h2{font-size:18px;font-weight:500;letter-spacing:-0.3px}
+  h3{font-size:16px;font-weight:500}
+  input,textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--input-bg);color:var(--fg);outline:none;transition:border .2s, box-shadow .2s}
+  input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(59,130,246,0.2)}
+  button{padding:12px 20px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--fg);font-size:14px;font-family:inherit;cursor:pointer;transition:all .2s;font-weight:500}
+  button:hover{background:var(--border)}
   button:disabled{opacity:0.5;cursor:not-allowed}
-  .btn-primary{background:#1a1a18;color:#fff;border-color:#1a1a18}
-  .btn-primary:hover{background:#333}
-  .card{background:#fff;border:0.5px solid #e0ddd6;border-radius:12px;padding:1.25rem}
-  .tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:99px;border:0.5px solid}
-  .screen{display:none}
+  .btn-primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+  .btn-primary:hover{background:#d1d5db}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:0 8px 16px -4px rgba(0,0,0,0.2)}
+  .header-logo{display:flex;justify-content:center;padding:1.5rem 0 2rem;margin-bottom:1rem}
+  .header-logo img{height:60px; object-fit: contain;}
+  .tag{display:inline-block;font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid;font-weight:500;background:rgba(255,255,255,0.05)}
+  .screen{display:none;animation:fadeIn 0.3s ease}
   .screen.active{display:block}
-  .tab-bar{display:flex;border-bottom:0.5px solid #ddd;margin-bottom:20px}
-  .tab{padding:8px 16px;border:none;background:none;cursor:pointer;font-size:14px;border-bottom:2px solid transparent;color:#666}
-  .tab.active{border-bottom-color:#1a1a18;color:#1a1a18;font-weight:500}
-  .slot-row{background:#f9f8f5;border-radius:8px;padding:10px 12px;margin-bottom:8px}
-  .slot-grid{display:grid;grid-template-columns:100px 100px 1fr 120px 36px;gap:8px;align-items:end}
-  .field-label{font-size:11px;color:#888;margin-bottom:3px}
-  .analysis-box{background:#f9f8f5;border-radius:10px;padding:1.25rem;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}
-  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
-  .metric{background:#f0eeea;border-radius:8px;padding:12px;text-align:center}
-  .metric-val{font-size:22px;font-weight:500}
-  .metric-lbl{font-size:11px;color:#888;margin-top:2px}
-  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-  .bar-label{width:110px;font-size:13px;color:#555;text-align:right}
-  .bar-track{flex:1;height:10px;background:#e8e6e0;border-radius:99px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:99px}
-  .bar-val{width:50px;font-size:12px;color:#888}
-  footer{text-align:center;padding:2rem 0 1rem;font-size:12px;color:#aaa}
-  .success-icon{font-size:36px;margin-bottom:8px}
-  @media(max-width:600px){
+  @keyframes fadeIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+  .tab-bar{display:flex;border-bottom:1px solid var(--border);margin-bottom:24px;overflow-x:auto}
+  .tab{padding:12px 20px;border:none;background:none;cursor:pointer;font-size:14px;border-bottom:2px solid transparent;color:var(--text-muted);white-space:nowrap;border-radius:0}
+  .tab:hover{background:rgba(255,255,255,0.03)}
+  .tab.active{border-bottom-color:var(--fg);color:var(--fg);font-weight:500}
+  .slot-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
+  .slot-grid{display:grid;grid-template-columns:100px 100px 1.5fr 1fr 36px;gap:12px;align-items:end}
+  .field-label{font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
+  .analysis-box{background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:1.5rem;font-size:15px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+  .bar-row{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+  .bar-label{width:140px;font-size:13px;color:var(--text-muted);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+  .bar-track{flex:1;height:10px;background:var(--input-bg);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+  .bar-fill{height:100%;border-radius:99px;transition:width 0.5s ease}
+  .bar-val{width:80px;font-size:13px;color:var(--text-muted);font-feature-settings:"tnum"}
+  footer{text-align:center;padding:4rem 0 2rem;font-size:13px;color:var(--text-muted)}
+  .success-icon{font-size:48px;margin-bottom:16px;color:#10b981}
+  ::-webkit-calendar-picker-indicator { filter: invert(1); opacity: 0.7; cursor: pointer; }
+  @media(max-width:640px){
     .slot-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto}
     .slot-grid .full{grid-column:1/-1}
   }
@@ -47,22 +50,32 @@
 </head>
 <body>
 
+<div class="header-logo">
+  <img src="leag%20white%20.png" alt="LEAG Logo" />
+</div>
+
 <!-- HOME -->
 <div id="screen-home" class="screen active">
-  <div style="max-width:480px;margin:0 auto;padding:2.5rem 1rem">
-    <div style="margin-bottom:2rem">
-      <p style="font-size:12px;color:#999;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">LEAG Workshop</p>
-      <h1>Time management tracker</h1>
-      <p style="color:#666;font-size:14px;margin-top:6px">Log your day and discover where your time really goes.</p>
+  <div style="max-width:480px;margin:0 auto;padding:1rem 1.5rem">
+    <div style="margin-bottom:2.5rem;text-align:center">
+      <p style="font-size:12px;color:var(--primary);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-weight:600">Company Program</p>
+      <h1>Time Management Tracker</h1>
+      <p style="color:var(--text-muted);font-size:15px;margin-top:8px">Log your day and discover where your time really goes.</p>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px">
-      <button onclick="go('participant')" style="padding:16px 20px;text-align:left;border-radius:12px">
-        <div style="font-weight:500;font-size:15px">I'm a participant</div>
-        <div style="font-size:13px;color:#888;margin-top:2px">Log my day &amp; view my analysis</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button onclick="go('participant')" style="padding:18px 24px;text-align:left;border-radius:12px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:600;font-size:16px;color:var(--fg)">I'm a participant</div>
+          <div style="font-size:14px;color:var(--text-muted);margin-top:4px">Log my day &amp; view my analysis</div>
+        </div>
+        <span style="color:var(--text-muted)">→</span>
       </button>
-      <button onclick="go('pw')" style="padding:16px 20px;text-align:left;border-radius:12px">
-        <div style="font-weight:500;font-size:15px">Instructor access</div>
-        <div style="font-size:13px;color:#888;margin-top:2px">View submissions &amp; run AI analysis</div>
+      <button onclick="go('pw')" style="padding:18px 24px;text-align:left;border-radius:12px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-weight:600;font-size:16px;color:var(--fg)">Instructor access</div>
+          <div style="font-size:14px;color:var(--text-muted);margin-top:4px">View submissions &amp; run AI analysis</div>
+        </div>
+        <span style="color:var(--text-muted)">→</span>
       </button>
     </div>
     <footer>Programmed by LEAG</footer>
@@ -71,69 +84,87 @@
 
 <!-- PASSWORD -->
 <div id="screen-pw" class="screen">
-  <div style="max-width:380px;margin:0 auto;padding:2.5rem 1rem">
-    <button onclick="go('home')" style="background:none;border:none;color:#888;margin-bottom:16px;padding:0;font-size:13px">← Back</button>
-    <h2 style="margin-bottom:20px">Instructor access</h2>
-    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw()" style="margin-bottom:8px"/>
-    <p id="pw-error" style="color:#c0392b;font-size:13px;display:none;margin-bottom:8px">Incorrect password.</p>
-    <button class="btn-primary" onclick="checkPw()" style="width:100%;margin-top:4px">Enter</button>
+  <div style="max-width:400px;margin:0 auto;padding:1rem 1.5rem">
+    <button onclick="go('home')" style="background:none;border:none;color:var(--text-muted);margin-bottom:24px;padding:0;font-size:14px;display:flex;align-items:center;gap:6px">← Back</button>
+    <div class="card">
+      <h2 style="margin-bottom:24px;text-align:center">Instructor Login</h2>
+      <div style="margin-bottom:16px">
+        <div class="field-label">Access Password</div>
+        <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw()"/>
+      </div>
+      <div style="margin-bottom:16px">
+        <div class="field-label">Anthropic API Key (Required)</div>
+        <input type="password" id="api-key-input" placeholder="sk-ant-..." onkeydown="if(event.key==='Enter')checkPw()"/>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:6px">Your key is stored locally and never sent to our servers.</p>
+      </div>
+      <p id="pw-error" style="color:var(--danger);font-size:13px;display:none;margin-bottom:12px;font-weight:500">Incorrect password.</p>
+      <button class="btn-primary" onclick="checkPw()" style="width:100%;margin-top:8px">Enter Dashboard</button>
+    </div>
     <footer>Programmed by LEAG</footer>
   </div>
 </div>
 
 <!-- PARTICIPANT FORM -->
 <div id="screen-participant" class="screen">
-  <div style="max-width:660px;margin:0 auto;padding:2rem 1rem">
-    <button onclick="go('home')" style="background:none;border:none;color:#888;margin-bottom:16px;padding:0;font-size:13px">← Back</button>
-    <h2 style="margin-bottom:4px">Log your day</h2>
-    <p style="font-size:13px;color:#888;margin-bottom:20px">Add your time slots below. Be as detailed as you can.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
-      <div><div class="field-label">Your full name</div><input id="p-name" placeholder="Name"/></div>
-      <div><div class="field-label">Date</div><input type="date" id="p-date"/></div>
+  <div style="max-width:720px;margin:0 auto;padding:1rem 1.5rem">
+    <button onclick="go('home')" style="background:none;border:none;color:var(--text-muted);margin-bottom:24px;padding:0;font-size:14px;display:flex;align-items:center;gap:6px">← Back</button>
+    <div style="margin-bottom:24px">
+      <h2 style="font-size:22px;margin-bottom:6px">Log your day</h2>
+      <p style="font-size:14px;color:var(--text-muted)">Add your time slots below. Be as detailed as you can.</p>
     </div>
+    
+    <div class="card" style="margin-bottom:24px;padding:1.25rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div><div class="field-label">Participant Name</div><input id="p-name" placeholder="Full name"/></div>
+        <div><div class="field-label">Date</div><input type="date" id="p-date"/></div>
+      </div>
+    </div>
+
     <div id="slots-container"></div>
-    <button onclick="addSlot()" style="width:100%;border-style:dashed;color:#888;margin-bottom:20px;padding:10px">+ Add time slot</button>
-    <button class="btn-primary" onclick="submitDay()" style="width:100%;padding:12px;font-size:15px">Submit my day →</button>
+    <button onclick="addSlot()" style="width:100%;border-style:dashed;color:var(--text-muted);background:none;margin-bottom:24px;padding:16px;border-width:2px;border-color:var(--border)">+ Add another time slot</button>
+    <button class="btn-primary" onclick="submitDay()" style="width:100%;padding:14px;font-size:16px">Submit my day →</button>
     <footer>Programmed by LEAG</footer>
   </div>
 </div>
 
 <!-- SUBMITTED -->
 <div id="screen-submitted" class="screen">
-  <div style="max-width:480px;margin:0 auto;padding:2.5rem 1rem">
-    <div class="card" style="text-align:center;margin-bottom:20px">
+  <div style="max-width:480px;margin:0 auto;padding:1rem 1.5rem">
+    <div class="card" style="text-align:center;margin-bottom:24px;padding:3rem 1.5rem">
       <div class="success-icon">✓</div>
-      <h2 style="margin-bottom:4px">Day submitted!</h2>
-      <p style="font-size:13px;color:#888">Your instructor will run the analysis soon. Come back here to see your results.</p>
+      <h2 style="margin-bottom:8px">Day submitted successfully!</h2>
+      <p style="font-size:14px;color:var(--text-muted);line-height:1.5">Your instructor will run the analysis soon. Check back here to see your results.</p>
     </div>
     <div class="card">
-      <h3 style="margin-bottom:12px">View my analysis</h3>
-      <input id="lookup-name" placeholder="Enter your name" style="margin-bottom:8px"/>
+      <h3 style="margin-bottom:16px">View my analysis</h3>
+      <input id="lookup-name" placeholder="Enter your participant name" style="margin-bottom:12px"/>
       <button class="btn-primary" onclick="lookupAnalysis()" style="width:100%">Check my analysis</button>
-      <div id="lookup-result" style="margin-top:12px"></div>
+      <div id="lookup-result" style="margin-top:16px"></div>
     </div>
-    <button onclick="go('home')" style="margin-top:16px;background:none;border:none;color:#888;font-size:13px;cursor:pointer">← Back to home</button>
+    <div style="text-align:center;margin-top:24px">
+      <button onclick="go('home')" style="background:none;border:none;color:var(--text-muted);font-size:14px;cursor:pointer">← Back to home</button>
+    </div>
     <footer>Programmed by LEAG</footer>
   </div>
 </div>
 
 <!-- INSTRUCTOR -->
 <div id="screen-instructor" class="screen">
-  <div style="max-width:720px;margin:0 auto;padding:2rem 1rem">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+  <div style="max-width:800px;margin:0 auto;padding:1rem 1.5rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:16px">
       <div>
-        <h2 style="margin-bottom:2px">Instructor dashboard</h2>
-        <p id="sub-count" style="font-size:13px;color:#888">0 submissions</p>
+        <h2 style="font-size:22px;margin-bottom:4px">Instructor Dashboard</h2>
+        <p id="sub-count" style="font-size:14px;color:var(--primary);font-weight:500">0 submissions</p>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="run-btn" class="btn-primary" onclick="runAnalysis()">Run AI analysis →</button>
-        <button onclick="go('home')" style="background:none;border:none;color:#888;font-size:18px;cursor:pointer">✕</button>
+      <div style="display:flex;gap:12px;align-items:center">
+        <button id="run-btn" class="btn-primary" onclick="runAnalysis()">Run AI Analysis →</button>
+        <button onclick="go('home')" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;padding:0;line-height:1">✕</button>
       </div>
     </div>
     <div class="tab-bar">
       <button class="tab active" onclick="switchTab('submissions',this)">Submissions</button>
-      <button class="tab" onclick="switchTab('individual',this)">Individual reports</button>
-      <button class="tab" onclick="switchTab('aggregate',this)">Class overview</button>
+      <button class="tab" onclick="switchTab('individual',this)">Individual Reports</button>
+      <button class="tab" onclick="switchTab('aggregate',this)">Company Overview</button>
     </div>
     <div id="tab-submissions"></div>
     <div id="tab-individual" style="display:none"></div>
@@ -144,18 +175,42 @@
 
 <script>
 const INSTRUCTOR_PASSWORD = "admin123";
-const API_KEY = "YOUR_ANTHROPIC_API_KEY_HERE";
-const CATEGORIES = ["Study","Work","Social","Entertainment","Exercise","Sleep","Prayer","Transport","Other"];
-const CAT_COLORS = {Study:"#185FA5",Work:"#3B6D11",Social:"#7F77DD",Entertainment:"#D85A30",Exercise:"#1D9E75",Sleep:"#888780",Prayer:"#BA7517",Transport:"#A32D2D",Other:"#5F5E5A"};
 
+// Colors for dynamic tasks
+const knownColors = {};
+const palette = [
+  "#3b82f6", // Blue
+  "#10b981", // Emerald
+  "#f59e0b", // Amber
+  "#ef4444", // Red
+  "#8b5cf6", // Violet
+  "#ec4899", // Pink
+  "#14b8a6", // Teal
+  "#f97316"  // Orange
+];
+let colorIndex = 0;
+
+function getColor(taskType) {
+  const t = taskType.toLowerCase().trim();
+  if (knownColors[t]) return knownColors[t];
+  const c = palette[colorIndex % palette.length];
+  knownColors[t] = c;
+  colorIndex++;
+  return c;
+}
+
+let anthropicKey = localStorage.getItem("leag_api_key") || "";
 let submissions = JSON.parse(localStorage.getItem("leag_submissions")||"[]");
-let studentAnalyses = JSON.parse(localStorage.getItem("leag_analyses")||"{}");
+let participantAnalyses = JSON.parse(localStorage.getItem("leag_analyses")||"{}");
 let aggregateAnalysis = localStorage.getItem("leag_aggregate")||"";
 let slotCount = 0;
 
+// Preload colors for existing data
+submissions.flatMap(s=>s.slots).forEach(sl => getColor(sl.category));
+
 function save() {
   localStorage.setItem("leag_submissions", JSON.stringify(submissions));
-  localStorage.setItem("leag_analyses", JSON.stringify(studentAnalyses));
+  localStorage.setItem("leag_analyses", JSON.stringify(participantAnalyses));
   localStorage.setItem("leag_aggregate", aggregateAnalysis);
 }
 
@@ -163,14 +218,27 @@ function go(screen) {
   document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
   document.getElementById("screen-"+screen).classList.add("active");
   if (screen === "participant") initParticipantForm();
+  if (screen === "pw") {
+    document.getElementById("api-key-input").value = anthropicKey;
+  }
   if (screen === "instructor") refreshInstructor();
 }
 
 function checkPw() {
   const v = document.getElementById("pw-input").value;
+  const ak = document.getElementById("api-key-input").value.trim();
   const err = document.getElementById("pw-error");
-  if (v === INSTRUCTOR_PASSWORD) { err.style.display="none"; document.getElementById("pw-input").value=""; go("instructor"); }
-  else { err.style.display="block"; }
+  if (v === INSTRUCTOR_PASSWORD) { 
+    err.style.display="none"; 
+    if (ak) {
+      anthropicKey = ak;
+      localStorage.setItem("leag_api_key", ak);
+    }
+    document.getElementById("pw-input").value=""; 
+    go("instructor"); 
+  } else { 
+    err.style.display="block"; 
+  }
 }
 
 function initParticipantForm() {
@@ -182,21 +250,20 @@ function initParticipantForm() {
   addSlot("08:00","09:00");
 }
 
-function addSlot(start="",end="",activity="",category="Study") {
+function addSlot(start="",end="",activity="",category="") {
   const i = slotCount++;
   const prevSlots = document.querySelectorAll(".slot-row");
   if (!start && prevSlots.length > 0) {
     const prev = prevSlots[prevSlots.length-1];
     start = prev.querySelector('[data-end]').value || "";
   }
-  const catOpts = CATEGORIES.map(c=>`<option${c===category?" selected":""}>${c}</option>`).join("");
   const html = `<div class="slot-row" id="slot-${i}">
     <div class="slot-grid">
-      <div><div class="field-label">From</div><input type="time" value="${start}" data-field="start" style="padding:7px 8px"/></div>
-      <div><div class="field-label">To</div><input type="time" value="${end}" data-end data-field="end" style="padding:7px 8px"/></div>
-      <div class="full"><div class="field-label">Activity</div><input placeholder="What did you do?" value="${activity}" data-field="activity"/></div>
-      <div><div class="field-label">Category</div><select data-field="category">${catOpts}</select></div>
-      <div style="display:flex;align-items:flex-end;padding-bottom:2px"><button onclick="removeSlot(${i})" style="border:none;background:none;color:#c0392b;font-size:18px;cursor:pointer;padding:4px">✕</button></div>
+      <div><div class="field-label">From</div><input type="time" value="${start}" data-field="start"/></div>
+      <div><div class="field-label">To</div><input type="time" value="${end}" data-end data-field="end"/></div>
+      <div class="full"><div class="field-label">Activity Detail</div><input placeholder="What did you do?" value="${activity}" data-field="activity"/></div>
+      <div class="full"><div class="field-label">Task Type</div><input placeholder="e.g. Emails, Client Call, Development" value="${category}" data-field="category"/></div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px"><button onclick="removeSlot(${i})" style="border:none;background:none;color:var(--danger);font-size:24px;cursor:pointer;padding:4px;line-height:1">✕</button></div>
     </div>
   </div>`;
   document.getElementById("slots-container").insertAdjacentHTML("beforeend", html);
@@ -209,11 +276,12 @@ function getSlots() {
     start: row.querySelector('[data-field="start"]').value,
     end: row.querySelector('[data-field="end"]').value,
     activity: row.querySelector('[data-field="activity"]').value,
-    category: row.querySelector('[data-field="category"]').value,
+    category: row.querySelector('[data-field="category"]').value || "Uncategorized",
   }));
 }
 
 function minutesBetween(t1,t2) {
+  if(!t1||!t2) return 0;
   const [h1,m1]=t1.split(":").map(Number),[h2,m2]=t2.split(":").map(Number);
   return (h2*60+m2)-(h1*60+m1);
 }
@@ -230,20 +298,32 @@ function submitDay() {
   if (!name) return alert("Please enter your name.");
   const slots = getSlots();
   if (!slots.length) return alert("Please add at least one time slot.");
+  
+  // Basic validation
+  for(let s of slots) {
+    if(!s.start || !s.end) return alert("Please fill in start and end times for all slots.");
+    if(minutesBetween(s.start, s.end) < 0) return alert("End time cannot be before start time.");
+  }
+
   const entry = { name, date, slots, submittedAt: new Date().toISOString() };
   submissions = [...submissions.filter(s=>!(s.name===name&&s.date===date)), entry];
+  
+  // Pre-calculate colors for new inputs so they are ready
+  slots.forEach(sl => getColor(sl.category));
+  
   save();
   go("submitted");
 }
 
 function lookupAnalysis() {
   const n = document.getElementById("lookup-name").value.trim().toLowerCase();
-  const found = Object.entries(studentAnalyses).find(([k])=>k.toLowerCase()===n);
+  if(!n) return alert("Please enter your name.");
+  const found = Object.entries(participantAnalyses).find(([k])=>k.toLowerCase()===n);
   const box = document.getElementById("lookup-result");
   if (found) {
     box.innerHTML = `<div class="analysis-box">${formatAnalysis(found[1])}</div>`;
   } else {
-    box.innerHTML = `<p style="font-size:13px;color:#888;margin-top:4px">No analysis found yet — check back after your instructor runs it.</p>`;
+    box.innerHTML = `<p style="font-size:14px;color:var(--text-muted);margin-top:8px;text-align:center">No analysis found yet. Check back after your instructor runs it.</p>`;
   }
 }
 
@@ -263,36 +343,48 @@ function refreshInstructor() {
 
 function renderSubmissionsTab() {
   const el = document.getElementById("tab-submissions");
-  if (!submissions.length) { el.innerHTML=`<p style="color:#888;font-size:14px">No submissions yet.</p>`; return; }
+  if (!submissions.length) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">No submissions yet.</p>`; return; }
   el.innerHTML = submissions.map(s => {
-    const tags = s.slots.map(sl=>`<span class="tag" style="color:${CAT_COLORS[sl.category]};border-color:${CAT_COLORS[sl.category]}44;background:${CAT_COLORS[sl.category]}11">${sl.start}–${sl.end} ${sl.category}</span>`).join(" ");
-    return `<div class="card" style="margin-bottom:10px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div><strong>${s.name}</strong><span style="font-size:12px;color:#888;margin-left:10px">${s.date}</span></div>
-        <span style="font-size:12px;color:#aaa">${s.slots.length} slots</span>
+    const tags = s.slots.map(sl=>{
+      const c = getColor(sl.category);
+      return `<span class="tag" style="color:${c};border-color:${c}55;background:${c}15">${sl.start}–${sl.end} ${sl.category}</span>`;
+    }).join(" ");
+    return `<div class="card" style="margin-bottom:16px;padding:1.25rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div><strong style="font-size:16px">${s.name}</strong><span style="font-size:13px;color:var(--text-muted);margin-left:12px">${s.date}</span></div>
+        <span style="font-size:13px;color:var(--text-muted);background:var(--input-bg);padding:4px 10px;border-radius:99px">${s.slots.length} slots</span>
       </div>
-      <div style="display:flex;flex-wrap:wrap;gap:5px">${tags}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">${tags}</div>
     </div>`;
   }).join("");
 }
 
 function renderIndividualTab() {
   const el = document.getElementById("tab-individual");
-  if (!Object.keys(studentAnalyses).length) { el.innerHTML=`<p style="color:#888;font-size:14px">Run the analysis first.</p>`; return; }
-  el.innerHTML = Object.entries(studentAnalyses).map(([name,text])=>{
+  if (!Object.keys(participantAnalyses).length) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">Run the analysis first.</p>`; return; }
+  el.innerHTML = Object.entries(participantAnalyses).map(([name,text])=>{
     const sub = submissions.find(s=>s.name===name);
     const catTotals={};
-    if(sub) sub.slots.forEach(sl=>{const d=minutesBetween(sl.start,sl.end);if(d>0)catTotals[sl.category]=(catTotals[sl.category]||0)+d;});
+    if(sub) sub.slots.forEach(sl=>{
+      const d=minutesBetween(sl.start,sl.end);
+      if(d>0){
+        const cat = sl.category.trim() || "Uncategorized";
+        catTotals[cat]=(catTotals[cat]||0)+d;
+      }
+    });
     const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
-    const bars=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`
+    const bars=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>{
+      const color = getColor(c);
+      return `
       <div class="bar-row">
-        <div class="bar-label">${c}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(m/total*100)}%;background:${CAT_COLORS[c]}"></div></div>
+        <div class="bar-label" title="${c}">${c}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${total>0?Math.round(m/total*100):0}%;background:${color}"></div></div>
         <div class="bar-val">${fmtMins(m)}</div>
-      </div>`).join("");
-    return `<div style="margin-bottom:28px">
-      <h3 style="margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid #e8e6e0">${name}</h3>
-      ${bars?`<div style="margin-bottom:14px">${bars}</div>`:""}
+      </div>`;
+    }).join("");
+    return `<div class="card" style="margin-bottom:24px">
+      <h3 style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);font-size:18px">${name}</h3>
+      ${bars?`<div style="margin-bottom:20px;padding-right:20px">${bars}</div>`:""}
       <div class="analysis-box">${formatAnalysis(text)}</div>
     </div>`;
   }).join("");
@@ -300,20 +392,33 @@ function renderIndividualTab() {
 
 function renderAggregateTab() {
   const el = document.getElementById("tab-aggregate");
-  if (!aggregateAnalysis) { el.innerHTML=`<p style="color:#888;font-size:14px">Run the analysis to see the class overview.</p>`; return; }
+  if (!aggregateAnalysis) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">Run the analysis to see the company overview.</p>`; return; }
   const allSlots = submissions.flatMap(s=>s.slots);
   const catTotals={};
-  allSlots.forEach(sl=>{const d=minutesBetween(sl.start,sl.end);if(d>0)catTotals[sl.category]=(catTotals[sl.category]||0)+d;});
+  allSlots.forEach(sl=>{
+    const d=minutesBetween(sl.start,sl.end);
+    if(d>0){
+      const cat = sl.category.trim() || "Uncategorized";
+      catTotals[cat]=(catTotals[cat]||0)+d;
+    }
+  });
   const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
-  const bars=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`
+  const bars=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>{
+    const color = getColor(c);
+    const pct = total>0 ? Math.round(m/total*100) : 0;
+    return `
     <div class="bar-row">
-      <div class="bar-label">${c}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(m/total*100)}%;background:${CAT_COLORS[c]}"></div></div>
-      <div class="bar-val">${fmtMins(m)} · ${Math.round(m/total*100)}%</div>
-    </div>`).join("");
+      <div class="bar-label" title="${c}">${c}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="bar-val">${fmtMins(m)} · ${pct}%</div>
+    </div>`;
+  }).join("");
   el.innerHTML=`
-    <div style="margin-bottom:20px">${bars}</div>
-    <div class="analysis-box">${formatAnalysis(aggregateAnalysis)}</div>`;
+    <div class="card" style="margin-bottom:24px">
+      <h3 style="margin-bottom:16px">Company Task Distribution</h3>
+      <div style="margin-bottom:8px;padding-right:20px">${bars}</div>
+    </div>
+    <div class="analysis-box" style="margin-bottom:24px">${formatAnalysis(aggregateAnalysis)}</div>`;
 }
 
 function switchTab(name, btn) {
@@ -325,11 +430,29 @@ function switchTab(name, btn) {
 }
 
 async function callClaude(prompt) {
+  if (!anthropicKey) {
+    throw new Error("Anthropic API key is missing. Please log out, enter your API key, and try again.");
+  }
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
-    headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body: JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1500,messages:[{role:"user",content:prompt}]})
+    headers:{
+      "Content-Type":"application/json",
+      "x-api-key":anthropicKey,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body: JSON.stringify({
+      model:"claude-3-5-sonnet-20241022",
+      max_tokens:1500,
+      messages:[{role:"user",content:prompt}]
+    })
   });
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    throw new Error(`API Error (${res.status}): ${errorText}`);
+  }
+  
   const data = await res.json();
   return data.content?.find(b=>b.type==="text")?.text || "Analysis unavailable.";
 }
@@ -337,13 +460,13 @@ async function callClaude(prompt) {
 async function runAnalysis() {
   if (!submissions.length) return alert("No submissions yet.");
   const btn = document.getElementById("run-btn");
-  btn.disabled = true; btn.textContent = "Analyzing…";
+  btn.disabled = true; btn.textContent = "Analyzing… (This may take a minute)";
 
   try {
     for (const sub of submissions) {
       const slotText = sub.slots.map(s=>{
         const d=minutesBetween(s.start,s.end);
-        return `  ${s.start}–${s.end} (${fmtMins(d)}): ${s.activity} [${s.category}]`;
+        return `  ${s.start}–${s.end} (${fmtMins(d)}): ${s.activity} [Task Type: ${s.category}]`;
       }).join("\n");
       const prompt = `You are an expert time management coach. Analyze this participant's day and provide a full, detailed personal report.
 
@@ -354,46 +477,53 @@ Time log:
 ${slotText}
 
 Write a thorough structured analysis with these sections:
-1. **Time breakdown** – hours spent per category with percentages
+1. **Time breakdown** – hours spent per task type with percentages
 2. **Productivity score** – rate out of 10 with detailed reasoning
 3. **Biggest time drain** – specific activity or pattern wasting the most time
 4. **Positive patterns** – what they are doing well
 5. **Top 3 recommendations** – specific, actionable, encouraging coaching advice
 6. **One-sentence summary** – capture their day in one sentence
 
-Keep tone warm, coaching-style, specific, and motivating.`;
-      studentAnalyses[sub.name] = await callClaude(prompt);
+Keep tone warm, coaching-style, specific, and motivating. Use exact names of task types they provided.`;
+      participantAnalyses[sub.name] = await callClaude(prompt);
     }
 
     const allSlots = submissions.flatMap(s=>s.slots);
     const catTotals={};
-    allSlots.forEach(sl=>{const d=minutesBetween(sl.start,sl.end);if(d>0)catTotals[sl.category]=(catTotals[sl.category]||0)+d;});
+    allSlots.forEach(sl=>{
+      const d=minutesBetween(sl.start,sl.end);
+      if(d>0){
+        const cat = sl.category.trim() || "Uncategorized";
+        catTotals[cat]=(catTotals[cat]||0)+d;
+      }
+    });
     const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
-    const catBreakdown=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`${c}: ${fmtMins(m)} (${Math.round(m/total*100)}%)`).join("\n");
+    const catBreakdown=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`${c}: ${fmtMins(m)} (${total>0?Math.round(m/total*100):0}%)`).join("\n");
 
-    const aggPrompt = `You are a time management workshop facilitator. Below is aggregated anonymous data from ${submissions.length} participants.
+    const aggPrompt = `You are a corporate time management consultant. Below is aggregated anonymous data from ${submissions.length} participants in the company.
 
-Category breakdown across all participants:
+Task Type breakdown across the company:
 ${catBreakdown}
 
-Provide a full class-level report with:
+Provide a full company-level report with:
 1. **Where time is most wasted** – top patterns with data and percentages
-2. **Common weak spots** – behaviors seen across participants
-3. **Class productivity overview** – general honest assessment
-4. **Distribution analysis** – how time is split between productive vs unproductive activities
-5. **3 workshop focus areas** – specific topics to address in your next session
-6. **Recommended action** – one collective challenge to give participants
+2. **Common weak spots** – behaviors seen across the company workflow
+3. **Company productivity overview** – general honest assessment
+4. **Distribution analysis** – how time is split between potentially productive vs unproductive activities
+5. **3 company focus areas** – specific structural or workflow topics to address
+6. **Recommended action** – one collective challenge for the company
 
-Be analytical, specific, and use the data. No individual names.`;
+Be analytical, specific, and use the data. Do NOT invent or mention any individual names. Ensure this is completely anonymous.`;
 
     aggregateAnalysis = await callClaude(aggPrompt);
     save();
     refreshInstructor();
+    alert("Analysis completed successfully!");
   } catch(e) {
     alert("Error running analysis: " + e.message);
   }
 
-  btn.disabled=false; btn.textContent="Run AI analysis →";
+  btn.disabled=false; btn.textContent="Run AI Analysis →";
 }
 </script>
 </body>
