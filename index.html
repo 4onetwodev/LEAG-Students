@@ -8,7 +8,7 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
   :root { --bg: #0f1014; --fg: #f3f4f6; --card: #181a20; --border: #2c2f38; --primary: #3b82f6; --input-bg: #21242d; --text-muted: #9ca3af; --danger: #ef4444; }
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--fg);min-height:100vh;font-size:15px;line-height:1.6}
+  body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:radial-gradient(circle at 50% 0%, #1e293b 0%, var(--bg) 60%);color:var(--fg);min-height:100vh;font-size:15px;line-height:1.6}
   h1{font-size:26px;font-weight:600;letter-spacing:-0.5px}
   h2{font-size:18px;font-weight:500;letter-spacing:-0.3px}
   h3{font-size:16px;font-weight:500}
@@ -17,11 +17,12 @@
   button{padding:12px 20px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--fg);font-size:14px;font-family:inherit;cursor:pointer;transition:all .2s;font-weight:500}
   button:hover{background:var(--border)}
   button:disabled{opacity:0.5;cursor:not-allowed}
-  .btn-primary{background:var(--fg);color:var(--bg);border-color:var(--fg)}
-  .btn-primary:hover{background:#d1d5db}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:0 8px 16px -4px rgba(0,0,0,0.2)}
+  .btn-primary{background:linear-gradient(135deg, #3b82f6, #2563eb);color:white;border:none;box-shadow:0 4px 14px 0 rgba(59, 130, 246, 0.39);transition:all .3s ease;}
+  .btn-primary:hover{box-shadow:0 6px 20px 0 rgba(59, 130, 246, 0.5);transform:translateY(-1px);}
+  .card{background:rgba(24,26,32,0.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.5rem;box-shadow:0 8px 32px 0 rgba(0,0,0,0.3);transition:transform .3s ease;}
+  .card:hover{transform:translateY(-2px);}
   .header-logo{display:flex;justify-content:center;padding:1.5rem 0 2rem;margin-bottom:1rem}
-  .header-logo img{height:60px; object-fit: contain;}
+  .header-logo img{height:60px;width:auto;max-width:100%;object-fit:contain;}
   .tag{display:inline-block;font-size:12px;padding:4px 10px;border-radius:6px;border:1px solid;font-weight:500;background:rgba(255,255,255,0.05)}
   .screen{display:none;animation:fadeIn 0.3s ease}
   .screen.active{display:block}
@@ -46,6 +47,34 @@
     .slot-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto}
     .slot-grid .full{grid-column:1/-1}
   }
+  .score-circle {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; font-weight: 700;
+    border: 4px solid var(--primary);
+    color: var(--primary);
+    flex-shrink: 0;
+  }
+  .metric-card {
+    background: rgba(33, 36, 45, 0.6);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  .metric-title {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; font-weight: 600;
+  }
+  .metric-value {
+    font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--fg);
+  }
+  .rec-list {
+    padding-left: 20px; margin: 0; color: var(--fg); line-height: 1.5; font-size: 15px;
+  }
+  .rec-list li { margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -157,6 +186,10 @@
         <p id="sub-count" style="font-size:14px;color:var(--primary);font-weight:500">0 submissions</p>
       </div>
       <div style="display:flex;gap:12px;align-items:center">
+        <select id="model-select" style="padding:10px; width:220px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--fg);">
+           <option value="">Loading models...</option>
+        </select>
+        <button onclick="loadMockData()" style="border-color:var(--primary);color:var(--primary);background:none">Load Mock Data</button>
         <button id="run-btn" class="btn-primary" onclick="runAnalysis()">Run AI Analysis →</button>
         <button onclick="go('home')" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;padding:0;line-height:1">✕</button>
       </div>
@@ -236,6 +269,7 @@ function checkPw() {
     }
     document.getElementById("pw-input").value=""; 
     go("instructor"); 
+    fetchModels();
   } else { 
     err.style.display="block"; 
   }
@@ -344,14 +378,14 @@ function refreshInstructor() {
 function renderSubmissionsTab() {
   const el = document.getElementById("tab-submissions");
   if (!submissions.length) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">No submissions yet.</p>`; return; }
-  el.innerHTML = submissions.map(s => {
+  el.innerHTML = submissions.map((s, index) => {
     const tags = s.slots.map(sl=>{
       const c = getColor(sl.category);
       return `<span class="tag" style="color:${c};border-color:${c}55;background:${c}15">${sl.start}–${sl.end} ${sl.category}</span>`;
     }).join(" ");
     return `<div class="card" style="margin-bottom:16px;padding:1.25rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div><strong style="font-size:16px">${s.name}</strong><span style="font-size:13px;color:var(--text-muted);margin-left:12px">${s.date}</span></div>
+        <div><strong style="font-size:16px">Participant ${index + 1}</strong><span style="font-size:13px;color:var(--text-muted);margin-left:12px">${s.date}</span></div>
         <span style="font-size:13px;color:var(--text-muted);background:var(--input-bg);padding:4px 10px;border-radius:99px">${s.slots.length} slots</span>
       </div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">${tags}</div>
@@ -362,10 +396,11 @@ function renderSubmissionsTab() {
 function renderIndividualTab() {
   const el = document.getElementById("tab-individual");
   if (!Object.keys(participantAnalyses).length) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">Run the analysis first.</p>`; return; }
-  el.innerHTML = Object.entries(participantAnalyses).map(([name,text])=>{
-    const sub = submissions.find(s=>s.name===name);
+  el.innerHTML = submissions.map((sub, index) => {
+    const data = participantAnalyses[sub.name];
+    if (!data) return "";
     const catTotals={};
-    if(sub) sub.slots.forEach(sl=>{
+    sub.slots.forEach(sl=>{
       const d=minutesBetween(sl.start,sl.end);
       if(d>0){
         const cat = sl.category.trim() || "Uncategorized";
@@ -382,10 +417,37 @@ function renderIndividualTab() {
         <div class="bar-val">${fmtMins(m)}</div>
       </div>`;
     }).join("");
+
+    const widgets = typeof data === "object" ? `
+      <div style="display:flex; align-items:center; margin-bottom: 24px;">
+        <div class="score-circle">${data.score||"?"}</div>
+        <div>
+          <h4 style="margin:0; font-size:16px; color:var(--fg);">Productivity Score</h4>
+          <p style="margin:4px 0 0; color:var(--text-muted); font-size:14px;">Out of 10 based on focused time allocation.</p>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 16px;">
+        <div class="metric-card" style="border-left: 4px solid var(--danger); margin:0;">
+          <div class="metric-title">Biggest Time Drain</div>
+          <div class="metric-value">${data.drain||"N/A"}</div>
+        </div>
+        <div class="metric-card" style="border-left: 4px solid var(--success); margin:0;">
+          <div class="metric-title">Positive Patterns</div>
+          <div class="metric-value">${data.positives||"N/A"}</div>
+        </div>
+      </div>
+      <div class="metric-card" style="border-left: 4px solid var(--primary);">
+        <div class="metric-title">Top Recommendations</div>
+        <ul class="rec-list">
+          ${(data.recommendations||[]).map(r=>`<li>${r}</li>`).join("")}
+        </ul>
+      </div>
+    ` : `<div class="analysis-box">${formatAnalysis(data)}</div>`;
+
     return `<div class="card" style="margin-bottom:24px">
-      <h3 style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);font-size:18px">${name}</h3>
+      <h3 style="margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border);font-size:18px">Participant ${index + 1}</h3>
       ${bars?`<div style="margin-bottom:20px;padding-right:20px">${bars}</div>`:""}
-      <div class="analysis-box">${formatAnalysis(text)}</div>
+      ${widgets}
     </div>`;
   }).join("");
 }
@@ -413,12 +475,37 @@ function renderAggregateTab() {
       <div class="bar-val">${fmtMins(m)} · ${pct}%</div>
     </div>`;
   }).join("");
+
+  const data = aggregateAnalysis;
+  const widgets = typeof data === "object" ? `
+      <div class="metric-card" style="border-left: 4px solid var(--primary);">
+        <div class="metric-title">Matelec Overview</div>
+        <div class="metric-value">${data.overview||"N/A"}</div>
+      </div>
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 16px;">
+        <div class="metric-card" style="border-left: 4px solid var(--danger); margin:0;">
+          <div class="metric-title">Top Wasted Time</div>
+          <div class="metric-value">${data.wasted||"N/A"}</div>
+        </div>
+        <div class="metric-card" style="border-left: 4px solid var(--warning); margin:0;">
+          <div class="metric-title">Collective Challenge</div>
+          <div class="metric-value">${data.challenge||"N/A"}</div>
+        </div>
+      </div>
+      <div class="metric-card" style="border-left: 4px solid var(--success);">
+        <div class="metric-title">Key Focus Areas</div>
+        <ul class="rec-list">
+          ${(data.focusAreas||[]).map(r=>`<li>${r}</li>`).join("")}
+        </ul>
+      </div>
+  ` : `<div class="analysis-box">${formatAnalysis(data)}</div>`;
+
   el.innerHTML=`
     <div class="card" style="margin-bottom:24px">
       <h3 style="margin-bottom:16px">Matelec Task Distribution</h3>
       <div style="margin-bottom:8px;padding-right:20px">${bars}</div>
     </div>
-    <div class="analysis-box" style="margin-bottom:24px">${formatAnalysis(aggregateAnalysis)}</div>`;
+    ${widgets}`;
 }
 
 function switchTab(name, btn) {
@@ -429,10 +516,42 @@ function switchTab(name, btn) {
   });
 }
 
+async function fetchModels() {
+  const select = document.getElementById("model-select");
+  if (!anthropicKey) return;
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/models", {
+      headers:{
+        "x-api-key":anthropicKey,
+        "anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"
+      }
+    });
+    if(!res.ok) throw new Error("Failed to fetch models");
+    const data = await res.json();
+    const models = data.data.map(m=>m.id).filter(m=>m.startsWith("claude"));
+    select.innerHTML = models.map(m => `<option value="${m}">${m}</option>`).join("");
+    const best = models.find(m => m.includes("sonnet")) || models[0];
+    if (best) select.value = best;
+  } catch(e) {
+    console.error("Model fetch error:", e);
+    select.innerHTML = `<option value="claude-3-haiku-20240307">claude-3-haiku-20240307</option><option value="claude-3-sonnet-20240229">claude-3-sonnet-20240229</option>`;
+  }
+}
+
+function extractJSON(text) {
+  const match = text.match(/\[[\s\S]*\]|\{[\s\S]*\}/);
+  if (match) {
+    try { return JSON.parse(match[0]); } catch(e) {}
+  }
+  return null;
+}
+
 async function callClaude(prompt) {
   if (!anthropicKey) {
     throw new Error("Anthropic API key is missing. Please log out, enter your API key, and try again.");
   }
+  const selectedModel = document.getElementById("model-select").value || "claude-3-haiku-20240307";
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method:"POST",
     headers:{
@@ -442,8 +561,8 @@ async function callClaude(prompt) {
       "anthropic-dangerous-direct-browser-access":"true"
     },
     body: JSON.stringify({
-      model:"claude-3-5-sonnet-20241022",
-      max_tokens:1500,
+      model: selectedModel,
+      max_tokens:4000,
       messages:[{role:"user",content:prompt}]
     })
   });
@@ -454,38 +573,57 @@ async function callClaude(prompt) {
   }
   
   const data = await res.json();
-  return data.content?.find(b=>b.type==="text")?.text || "Analysis unavailable.";
+  return data.content?.find(b=>b.type==="text")?.text || "";
 }
 
 async function runAnalysis() {
   if (!submissions.length) return alert("No submissions yet.");
   const btn = document.getElementById("run-btn");
-  btn.disabled = true; btn.textContent = "Analyzing… (This may take a minute)";
+  btn.disabled = true;
 
   try {
-    for (const sub of submissions) {
-      const slotText = sub.slots.map(s=>{
-        const d=minutesBetween(s.start,s.end);
-        return `  ${s.start}–${s.end} (${fmtMins(d)}): ${s.activity} [Task Type: ${s.category}]`;
-      }).join("\n");
-      const prompt = `You are an expert time management coach. Analyze this participant's day and provide a full, detailed personal report.
+    const BATCH_SIZE = 5;
+    for (let i = 0; i < submissions.length; i += BATCH_SIZE) {
+      btn.textContent = `Analyzing batch ${Math.floor(i/BATCH_SIZE)+1} of ${Math.ceil(submissions.length/BATCH_SIZE)}...`;
+      const batch = submissions.slice(i, i + BATCH_SIZE);
+      
+      const batchLog = batch.map((sub, idx) => {
+        const anonName = `Participant ${i + idx + 1}`;
+        const slotText = sub.slots.map(s=>{
+          const d=minutesBetween(s.start,s.end);
+          return `  ${s.start}–${s.end} (${fmtMins(d)}): ${s.activity} [Task Type: ${s.category}]`;
+        }).join("\n");
+        return `### ${anonName}\nTime log:\n${slotText}\n`;
+      }).join("\n\n");
 
-Participant: ${sub.name}
-Date: ${sub.date}
+      const prompt = `You are an expert corporate time management coach. Analyze the following participants' day logs.
+      
+${batchLog}
 
-Time log:
-${slotText}
+Return ONLY a valid JSON array containing exactly ${batch.length} objects (one for each participant in order).
+Do not use markdown blocks (\`\`\`) or include any text outside the JSON array.
+JSON Object Structure for each participant:
+{
+  "id": "Participant X",
+  "score": <number 1-10>,
+  "drain": "<One sentence identifying the biggest time drain>",
+  "positives": "<One sentence on their best productivity pattern>",
+  "recommendations": ["<Actionable tip 1>", "<Actionable tip 2>", "<Actionable tip 3>"]
+}`;
 
-Write a thorough structured analysis with these sections:
-1. **Time breakdown** – hours spent per task type with percentages
-2. **Productivity score** – rate out of 10 with detailed reasoning
-3. **Biggest time drain** – specific activity or pattern wasting the most time
-4. **Positive patterns** – what they are doing well
-5. **Top 3 recommendations** – specific, actionable, encouraging coaching advice
-6. **One-sentence summary** – capture their day in one sentence
-
-Keep tone warm, coaching-style, specific, and motivating. Use exact names of task types they provided.`;
-      participantAnalyses[sub.name] = await callClaude(prompt);
+      const responseText = await callClaude(prompt);
+      const data = extractJSON(responseText);
+      if (Array.isArray(data)) {
+        data.forEach(d => {
+           const match = d.id.match(/\d+/);
+           if (match) {
+             const pIndex = parseInt(match[0]) - 1;
+             if (submissions[pIndex]) {
+                participantAnalyses[submissions[pIndex].name] = d;
+             }
+           }
+        });
+      }
     }
 
     const allSlots = submissions.flatMap(s=>s.slots);
@@ -505,17 +643,19 @@ Keep tone warm, coaching-style, specific, and motivating. Use exact names of tas
 Task Type breakdown across Matelec:
 ${catBreakdown}
 
-Provide a full Matelec-level report with:
-1. **Where time is most wasted** – top patterns with data and percentages
-2. **Common weak spots** – behaviors seen across the Matelec workflow
-3. **Matelec productivity overview** – general honest assessment
-4. **Distribution analysis** – how time is split between potentially productive vs unproductive activities
-5. **3 Matelec focus areas** – specific structural or workflow topics to address
-6. **Recommended action** – one collective challenge for Matelec
+Return ONLY a valid JSON object. Do not use markdown blocks (\`\`\`) or include any extra text outside the JSON object.
+JSON Object Structure:
+{
+  "wasted": "<One sentence highlighting the top wasted pattern>",
+  "overview": "<One paragraph general honest productivity assessment>",
+  "focusAreas": ["<Focus area 1>", "<Focus area 2>", "<Focus area 3>"],
+  "challenge": "<One collective challenge/goal for Matelec>"
+}`;
 
-Be analytical, specific, and use the data. Do NOT invent or mention any individual names. Ensure this is completely anonymous.`;
+    btn.textContent = "Generating Matelec overview...";
+    const aggResponse = await callClaude(aggPrompt);
+    aggregateAnalysis = extractJSON(aggResponse) || aggregateAnalysis;
 
-    aggregateAnalysis = await callClaude(aggPrompt);
     save();
     refreshInstructor();
     alert("Analysis completed successfully!");
@@ -524,6 +664,67 @@ Be analytical, specific, and use the data. Do NOT invent or mention any individu
   }
 
   btn.disabled=false; btn.textContent="Run AI Analysis →";
+}
+
+function loadMockData() {
+  const firstNames = ["Alice","Bob","Charlie","Diana","Evan","Fiona","George","Hannah","Ian","Julia","Kevin","Laura","Mike","Nina","Oscar","Paula","Quinn","Rachel","Sam","Tina"];
+  const lastNames = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin"];
+  
+  // Weights for realistic distribution
+  const taskPool = [
+    {a: "Clearing inbox and Slack", c: "Emails"}, {a: "Clearing inbox and Slack", c: "Emails"},
+    {a: "Client alignment call", c: "Client Call"}, {a: "Client onboarding", c: "Client Call"},
+    {a: "Writing feature spec", c: "Deep Work"}, {a: "Coding complex logic", c: "Deep Work"},
+    {a: "Sprint planning", c: "Meetings"}, {a: "All-hands sync", c: "Meetings"}, {a: "Standup", c: "Meetings"},
+    {a: "Expense reports", c: "Admin"},
+    {a: "Lunch break", c: "Break"}, {a: "Coffee run", c: "Break"},
+    {a: "Reviewing Q3 metrics", c: "Analysis"},
+    {a: "Drafting roadmaps", c: "Planning"}
+  ];
+  
+  const mock = [];
+  
+  for(let i=0; i<20; i++) {
+    const numSlots = 4 + Math.floor(Math.random() * 4); // 4 to 7 slots
+    let startHour = 8 + Math.floor(Math.random() * 2); // Start at 8:00 or 9:00
+    let currentMin = (Math.floor(Math.random() * 2) * 30); // 00 or 30
+    
+    const slots = [];
+    
+    for(let j=0; j<numSlots; j++) {
+      const task = taskPool[Math.floor(Math.random() * taskPool.length)];
+      // Random duration: 30, 60, 90, or 120 mins
+      const durationMins = 30 + (Math.floor(Math.random() * 4) * 30); 
+      
+      const sH = startHour.toString().padStart(2, '0');
+      const sM = currentMin.toString().padStart(2, '0');
+      const startStr = `${sH}:${sM}`;
+      
+      currentMin += durationMins;
+      const hoursAdded = Math.floor(currentMin / 60);
+      startHour += hoursAdded;
+      currentMin = currentMin % 60;
+      
+      const eH = startHour.toString().padStart(2, '0');
+      const eM = currentMin.toString().padStart(2, '0');
+      const endStr = `${eH}:${eM}`;
+      
+      slots.push({start: startStr, end: endStr, activity: task.a, category: task.c});
+    }
+    
+    mock.push({
+      name: firstNames[i] + " " + lastNames[i],
+      date: new Date().toISOString().split("T")[0],
+      slots: slots,
+      submittedAt: new Date().toISOString()
+    });
+  }
+
+  submissions = mock;
+  mock.flatMap(s=>s.slots).forEach(sl => getColor(sl.category));
+  save();
+  refreshInstructor();
+  alert("20 mock submissions generated and loaded! You can now run the AI Analysis.");
 }
 </script>
 </body>
