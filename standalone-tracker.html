@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Time Management Tracker — LEAG</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a18;min-height:100vh;font-size:15px;line-height:1.6}
+  h1{font-size:22px;font-weight:500}
+  h2{font-size:18px;font-weight:500}
+  h3{font-size:15px;font-weight:500}
+  input,select,textarea{width:100%;padding:8px 10px;border:0.5px solid #ccc;border-radius:8px;font-size:14px;font-family:inherit;background:#fff;outline:none;transition:border .15s}
+  input:focus,select:focus,textarea:focus{border-color:#555}
+  button{padding:9px 18px;border:0.5px solid #bbb;border-radius:8px;background:#fff;font-size:14px;font-family:inherit;cursor:pointer;transition:background .15s}
+  button:hover{background:#f0eeea}
+  button:disabled{opacity:0.5;cursor:not-allowed}
+  .btn-primary{background:#1a1a18;color:#fff;border-color:#1a1a18}
+  .btn-primary:hover{background:#333}
+  .card{background:#fff;border:0.5px solid #e0ddd6;border-radius:12px;padding:1.25rem}
+  .tag{display:inline-block;font-size:11px;padding:3px 8px;border-radius:99px;border:0.5px solid}
+  .screen{display:none}
+  .screen.active{display:block}
+  .tab-bar{display:flex;border-bottom:0.5px solid #ddd;margin-bottom:20px}
+  .tab{padding:8px 16px;border:none;background:none;cursor:pointer;font-size:14px;border-bottom:2px solid transparent;color:#666}
+  .tab.active{border-bottom-color:#1a1a18;color:#1a1a18;font-weight:500}
+  .slot-row{background:#f9f8f5;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+  .slot-grid{display:grid;grid-template-columns:100px 100px 1fr 120px 36px;gap:8px;align-items:end}
+  .field-label{font-size:11px;color:#888;margin-bottom:3px}
+  .analysis-box{background:#f9f8f5;border-radius:10px;padding:1.25rem;font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+  .metric{background:#f0eeea;border-radius:8px;padding:12px;text-align:center}
+  .metric-val{font-size:22px;font-weight:500}
+  .metric-lbl{font-size:11px;color:#888;margin-top:2px}
+  .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .bar-label{width:110px;font-size:13px;color:#555;text-align:right}
+  .bar-track{flex:1;height:10px;background:#e8e6e0;border-radius:99px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:99px}
+  .bar-val{width:50px;font-size:12px;color:#888}
+  footer{text-align:center;padding:2rem 0 1rem;font-size:12px;color:#aaa}
+  .success-icon{font-size:36px;margin-bottom:8px}
+  @media(max-width:600px){
+    .slot-grid{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto}
+    .slot-grid .full{grid-column:1/-1}
+  }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="screen-home" class="screen active">
+  <div style="max-width:480px;margin:0 auto;padding:2.5rem 1rem">
+    <div style="margin-bottom:2rem">
+      <p style="font-size:12px;color:#999;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">LEAG Workshop</p>
+      <h1>Time management tracker</h1>
+      <p style="color:#666;font-size:14px;margin-top:6px">Log your day and discover where your time really goes.</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="go('participant')" style="padding:16px 20px;text-align:left;border-radius:12px">
+        <div style="font-weight:500;font-size:15px">I'm a participant</div>
+        <div style="font-size:13px;color:#888;margin-top:2px">Log my day &amp; view my analysis</div>
+      </button>
+      <button onclick="go('pw')" style="padding:16px 20px;text-align:left;border-radius:12px">
+        <div style="font-weight:500;font-size:15px">Instructor access</div>
+        <div style="font-size:13px;color:#888;margin-top:2px">View submissions &amp; run AI analysis</div>
+      </button>
+    </div>
+    <footer>Programmed by LEAG</footer>
+  </div>
+</div>
+
+<!-- PASSWORD -->
+<div id="screen-pw" class="screen">
+  <div style="max-width:380px;margin:0 auto;padding:2.5rem 1rem">
+    <button onclick="go('home')" style="background:none;border:none;color:#888;margin-bottom:16px;padding:0;font-size:13px">← Back</button>
+    <h2 style="margin-bottom:20px">Instructor access</h2>
+    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw()" style="margin-bottom:8px"/>
+    <p id="pw-error" style="color:#c0392b;font-size:13px;display:none;margin-bottom:8px">Incorrect password.</p>
+    <button class="btn-primary" onclick="checkPw()" style="width:100%;margin-top:4px">Enter</button>
+    <footer>Programmed by LEAG</footer>
+  </div>
+</div>
+
+<!-- PARTICIPANT FORM -->
+<div id="screen-participant" class="screen">
+  <div style="max-width:660px;margin:0 auto;padding:2rem 1rem">
+    <button onclick="go('home')" style="background:none;border:none;color:#888;margin-bottom:16px;padding:0;font-size:13px">← Back</button>
+    <h2 style="margin-bottom:4px">Log your day</h2>
+    <p style="font-size:13px;color:#888;margin-bottom:20px">Add your time slots below. Be as detailed as you can.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+      <div><div class="field-label">Your full name</div><input id="p-name" placeholder="Name"/></div>
+      <div><div class="field-label">Date</div><input type="date" id="p-date"/></div>
+    </div>
+    <div id="slots-container"></div>
+    <button onclick="addSlot()" style="width:100%;border-style:dashed;color:#888;margin-bottom:20px;padding:10px">+ Add time slot</button>
+    <button class="btn-primary" onclick="submitDay()" style="width:100%;padding:12px;font-size:15px">Submit my day →</button>
+    <footer>Programmed by LEAG</footer>
+  </div>
+</div>
+
+<!-- SUBMITTED -->
+<div id="screen-submitted" class="screen">
+  <div style="max-width:480px;margin:0 auto;padding:2.5rem 1rem">
+    <div class="card" style="text-align:center;margin-bottom:20px">
+      <div class="success-icon">✓</div>
+      <h2 style="margin-bottom:4px">Day submitted!</h2>
+      <p style="font-size:13px;color:#888">Your instructor will run the analysis soon. Come back here to see your results.</p>
+    </div>
+    <div class="card">
+      <h3 style="margin-bottom:12px">View my analysis</h3>
+      <input id="lookup-name" placeholder="Enter your name" style="margin-bottom:8px"/>
+      <button class="btn-primary" onclick="lookupAnalysis()" style="width:100%">Check my analysis</button>
+      <div id="lookup-result" style="margin-top:12px"></div>
+    </div>
+    <button onclick="go('home')" style="margin-top:16px;background:none;border:none;color:#888;font-size:13px;cursor:pointer">← Back to home</button>
+    <footer>Programmed by LEAG</footer>
+  </div>
+</div>
+
+<!-- INSTRUCTOR -->
+<div id="screen-instructor" class="screen">
+  <div style="max-width:720px;margin:0 auto;padding:2rem 1rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div>
+        <h2 style="margin-bottom:2px">Instructor dashboard</h2>
+        <p id="sub-count" style="font-size:13px;color:#888">0 submissions</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="run-btn" class="btn-primary" onclick="runAnalysis()">Run AI analysis →</button>
+        <button onclick="go('home')" style="background:none;border:none;color:#888;font-size:18px;cursor:pointer">✕</button>
+      </div>
+    </div>
+    <div class="tab-bar">
+      <button class="tab active" onclick="switchTab('submissions',this)">Submissions</button>
+      <button class="tab" onclick="switchTab('individual',this)">Individual reports</button>
+      <button class="tab" onclick="switchTab('aggregate',this)">Class overview</button>
+    </div>
+    <div id="tab-submissions"></div>
+    <div id="tab-individual" style="display:none"></div>
+    <div id="tab-aggregate" style="display:none"></div>
+    <footer>Programmed by LEAG</footer>
+  </div>
+</div>
+
+<script>
+const INSTRUCTOR_PASSWORD = "admin123";
+const API_KEY = "YOUR_ANTHROPIC_API_KEY_HERE";
+const CATEGORIES = ["Study","Work","Social","Entertainment","Exercise","Sleep","Prayer","Transport","Other"];
+const CAT_COLORS = {Study:"#185FA5",Work:"#3B6D11",Social:"#7F77DD",Entertainment:"#D85A30",Exercise:"#1D9E75",Sleep:"#888780",Prayer:"#BA7517",Transport:"#A32D2D",Other:"#5F5E5A"};
+
+let submissions = JSON.parse(localStorage.getItem("leag_submissions")||"[]");
+let studentAnalyses = JSON.parse(localStorage.getItem("leag_analyses")||"{}");
+let aggregateAnalysis = localStorage.getItem("leag_aggregate")||"";
+let slotCount = 0;
+
+function save() {
+  localStorage.setItem("leag_submissions", JSON.stringify(submissions));
+  localStorage.setItem("leag_analyses", JSON.stringify(studentAnalyses));
+  localStorage.setItem("leag_aggregate", aggregateAnalysis);
+}
+
+function go(screen) {
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+screen).classList.add("active");
+  if (screen === "participant") initParticipantForm();
+  if (screen === "instructor") refreshInstructor();
+}
+
+function checkPw() {
+  const v = document.getElementById("pw-input").value;
+  const err = document.getElementById("pw-error");
+  if (v === INSTRUCTOR_PASSWORD) { err.style.display="none"; document.getElementById("pw-input").value=""; go("instructor"); }
+  else { err.style.display="block"; }
+}
+
+function initParticipantForm() {
+  slotCount = 0;
+  document.getElementById("p-name").value = "";
+  document.getElementById("p-date").value = new Date().toISOString().split("T")[0];
+  const c = document.getElementById("slots-container");
+  c.innerHTML = "";
+  addSlot("08:00","09:00");
+}
+
+function addSlot(start="",end="",activity="",category="Study") {
+  const i = slotCount++;
+  const prevSlots = document.querySelectorAll(".slot-row");
+  if (!start && prevSlots.length > 0) {
+    const prev = prevSlots[prevSlots.length-1];
+    start = prev.querySelector('[data-end]').value || "";
+  }
+  const catOpts = CATEGORIES.map(c=>`<option${c===category?" selected":""}>${c}</option>`).join("");
+  const html = `<div class="slot-row" id="slot-${i}">
+    <div class="slot-grid">
+      <div><div class="field-label">From</div><input type="time" value="${start}" data-field="start" style="padding:7px 8px"/></div>
+      <div><div class="field-label">To</div><input type="time" value="${end}" data-end data-field="end" style="padding:7px 8px"/></div>
+      <div class="full"><div class="field-label">Activity</div><input placeholder="What did you do?" value="${activity}" data-field="activity"/></div>
+      <div><div class="field-label">Category</div><select data-field="category">${catOpts}</select></div>
+      <div style="display:flex;align-items:flex-end;padding-bottom:2px"><button onclick="removeSlot(${i})" style="border:none;background:none;color:#c0392b;font-size:18px;cursor:pointer;padding:4px">✕</button></div>
+    </div>
+  </div>`;
+  document.getElementById("slots-container").insertAdjacentHTML("beforeend", html);
+}
+
+function removeSlot(i) { document.getElementById("slot-"+i)?.remove(); }
+
+function getSlots() {
+  return Array.from(document.querySelectorAll(".slot-row")).map(row => ({
+    start: row.querySelector('[data-field="start"]').value,
+    end: row.querySelector('[data-field="end"]').value,
+    activity: row.querySelector('[data-field="activity"]').value,
+    category: row.querySelector('[data-field="category"]').value,
+  }));
+}
+
+function minutesBetween(t1,t2) {
+  const [h1,m1]=t1.split(":").map(Number),[h2,m2]=t2.split(":").map(Number);
+  return (h2*60+m2)-(h1*60+m1);
+}
+
+function fmtMins(m) {
+  if(m<=0)return "0m";
+  const h=Math.floor(m/60),r=m%60;
+  return h>0?`${h}h ${r}m`:`${r}m`;
+}
+
+function submitDay() {
+  const name = document.getElementById("p-name").value.trim();
+  const date = document.getElementById("p-date").value;
+  if (!name) return alert("Please enter your name.");
+  const slots = getSlots();
+  if (!slots.length) return alert("Please add at least one time slot.");
+  const entry = { name, date, slots, submittedAt: new Date().toISOString() };
+  submissions = [...submissions.filter(s=>!(s.name===name&&s.date===date)), entry];
+  save();
+  go("submitted");
+}
+
+function lookupAnalysis() {
+  const n = document.getElementById("lookup-name").value.trim().toLowerCase();
+  const found = Object.entries(studentAnalyses).find(([k])=>k.toLowerCase()===n);
+  const box = document.getElementById("lookup-result");
+  if (found) {
+    box.innerHTML = `<div class="analysis-box">${formatAnalysis(found[1])}</div>`;
+  } else {
+    box.innerHTML = `<p style="font-size:13px;color:#888;margin-top:4px">No analysis found yet — check back after your instructor runs it.</p>`;
+  }
+}
+
+function formatAnalysis(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g,"<strong>$1</strong>")
+    .replace(/\n/g,"<br>")
+    .replace(/^#{1,3}\s*/gm,"");
+}
+
+function refreshInstructor() {
+  document.getElementById("sub-count").textContent = `${submissions.length} submission${submissions.length!==1?"s":""}`;
+  renderSubmissionsTab();
+  renderIndividualTab();
+  renderAggregateTab();
+}
+
+function renderSubmissionsTab() {
+  const el = document.getElementById("tab-submissions");
+  if (!submissions.length) { el.innerHTML=`<p style="color:#888;font-size:14px">No submissions yet.</p>`; return; }
+  el.innerHTML = submissions.map(s => {
+    const tags = s.slots.map(sl=>`<span class="tag" style="color:${CAT_COLORS[sl.category]};border-color:${CAT_COLORS[sl.category]}44;background:${CAT_COLORS[sl.category]}11">${sl.start}–${sl.end} ${sl.category}</span>`).join(" ");
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div><strong>${s.name}</strong><span style="font-size:12px;color:#888;margin-left:10px">${s.date}</span></div>
+        <span style="font-size:12px;color:#aaa">${s.slots.length} slots</span>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">${tags}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderIndividualTab() {
+  const el = document.getElementById("tab-individual");
+  if (!Object.keys(studentAnalyses).length) { el.innerHTML=`<p style="color:#888;font-size:14px">Run the analysis first.</p>`; return; }
+  el.innerHTML = Object.entries(studentAnalyses).map(([name,text])=>{
+    const sub = submissions.find(s=>s.name===name);
+    const catTotals={};
+    if(sub) sub.slots.forEach(sl=>{const d=minutesBetween(sl.start,sl.end);if(d>0)catTotals[sl.category]=(catTotals[sl.category]||0)+d;});
+    const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
+    const bars=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`
+      <div class="bar-row">
+        <div class="bar-label">${c}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(m/total*100)}%;background:${CAT_COLORS[c]}"></div></div>
+        <div class="bar-val">${fmtMins(m)}</div>
+      </div>`).join("");
+    return `<div style="margin-bottom:28px">
+      <h3 style="margin-bottom:12px;padding-bottom:8px;border-bottom:0.5px solid #e8e6e0">${name}</h3>
+      ${bars?`<div style="margin-bottom:14px">${bars}</div>`:""}
+      <div class="analysis-box">${formatAnalysis(text)}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderAggregateTab() {
+  const el = document.getElementById("tab-aggregate");
+  if (!aggregateAnalysis) { el.innerHTML=`<p style="color:#888;font-size:14px">Run the analysis to see the class overview.</p>`; return; }
+  const allSlots = submissions.flatMap(s=>s.slots);
+  const catTotals={};
+  allSlots.forEach(sl=>{const d=minutesBetween(sl.start,sl.end);if(d>0)catTotals[sl.category]=(catTotals[sl.category]||0)+d;});
+  const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
+  const bars=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`
+    <div class="bar-row">
+      <div class="bar-label">${c}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(m/total*100)}%;background:${CAT_COLORS[c]}"></div></div>
+      <div class="bar-val">${fmtMins(m)} · ${Math.round(m/total*100)}%</div>
+    </div>`).join("");
+  el.innerHTML=`
+    <div style="margin-bottom:20px">${bars}</div>
+    <div class="analysis-box">${formatAnalysis(aggregateAnalysis)}</div>`;
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+  ["submissions","individual","aggregate"].forEach(t=>{
+    document.getElementById("tab-"+t).style.display = t===name?"block":"none";
+  });
+}
+
+async function callClaude(prompt) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":API_KEY,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body: JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1500,messages:[{role:"user",content:prompt}]})
+  });
+  const data = await res.json();
+  return data.content?.find(b=>b.type==="text")?.text || "Analysis unavailable.";
+}
+
+async function runAnalysis() {
+  if (!submissions.length) return alert("No submissions yet.");
+  const btn = document.getElementById("run-btn");
+  btn.disabled = true; btn.textContent = "Analyzing…";
+
+  try {
+    for (const sub of submissions) {
+      const slotText = sub.slots.map(s=>{
+        const d=minutesBetween(s.start,s.end);
+        return `  ${s.start}–${s.end} (${fmtMins(d)}): ${s.activity} [${s.category}]`;
+      }).join("\n");
+      const prompt = `You are an expert time management coach. Analyze this participant's day and provide a full, detailed personal report.
+
+Participant: ${sub.name}
+Date: ${sub.date}
+
+Time log:
+${slotText}
+
+Write a thorough structured analysis with these sections:
+1. **Time breakdown** – hours spent per category with percentages
+2. **Productivity score** – rate out of 10 with detailed reasoning
+3. **Biggest time drain** – specific activity or pattern wasting the most time
+4. **Positive patterns** – what they are doing well
+5. **Top 3 recommendations** – specific, actionable, encouraging coaching advice
+6. **One-sentence summary** – capture their day in one sentence
+
+Keep tone warm, coaching-style, specific, and motivating.`;
+      studentAnalyses[sub.name] = await callClaude(prompt);
+    }
+
+    const allSlots = submissions.flatMap(s=>s.slots);
+    const catTotals={};
+    allSlots.forEach(sl=>{const d=minutesBetween(sl.start,sl.end);if(d>0)catTotals[sl.category]=(catTotals[sl.category]||0)+d;});
+    const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
+    const catBreakdown=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>`${c}: ${fmtMins(m)} (${Math.round(m/total*100)}%)`).join("\n");
+
+    const aggPrompt = `You are a time management workshop facilitator. Below is aggregated anonymous data from ${submissions.length} participants.
+
+Category breakdown across all participants:
+${catBreakdown}
+
+Provide a full class-level report with:
+1. **Where time is most wasted** – top patterns with data and percentages
+2. **Common weak spots** – behaviors seen across participants
+3. **Class productivity overview** – general honest assessment
+4. **Distribution analysis** – how time is split between productive vs unproductive activities
+5. **3 workshop focus areas** – specific topics to address in your next session
+6. **Recommended action** – one collective challenge to give participants
+
+Be analytical, specific, and use the data. No individual names.`;
+
+    aggregateAnalysis = await callClaude(aggPrompt);
+    save();
+    refreshInstructor();
+  } catch(e) {
+    alert("Error running analysis: " + e.message);
+  }
+
+  btn.disabled=false; btn.textContent="Run AI analysis →";
+}
+</script>
+</body>
+</html>
