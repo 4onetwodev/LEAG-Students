@@ -189,6 +189,7 @@
         <select id="model-select" style="padding:10px; width:220px; background:var(--input-bg); border:1px solid var(--border); border-radius:8px; color:var(--fg);">
            <option value="">Loading models...</option>
         </select>
+        <button onclick="refreshInstructor()" style="border-color:var(--text-muted);color:var(--fg);background:none;font-size:18px;padding:8px 14px;display:flex;align-items:center;justify-content:center" title="Fetch latest submissions from cloud">↻</button>
         <button onclick="loadMockData()" style="border-color:var(--primary);color:var(--primary);background:none">Load Mock Data</button>
         <button id="run-btn" class="btn-primary" onclick="runAnalysis()">Run AI Analysis →</button>
         <button onclick="go('home')" style="background:none;border:none;color:var(--text-muted);font-size:24px;cursor:pointer;padding:0;line-height:1">✕</button>
@@ -686,19 +687,25 @@ JSON Object Structure:
 }
 
 function loadMockData() {
-  const firstNames = ["Alice","Bob","Charlie","Diana","Evan","Fiona","George","Hannah","Ian","Julia","Kevin","Laura","Mike","Nina","Oscar","Paula","Quinn","Rachel","Sam","Tina"];
-  const lastNames = ["Smith","Johnson","Williams","Brown","Jones","Garcia","Miller","Davis","Rodriguez","Martinez","Hernandez","Lopez","Gonzalez","Wilson","Anderson","Thomas","Taylor","Moore","Jackson","Martin"];
+  const firstNames = ["Ali","Hassan","Omar","Tarek","Ziad","Fadi","Rami","Nadim","Sami","Karim","Nour","Rima","Zeina","Lina","Maya","Sara","Nadine","Farah","Yasmine","Lara"];
+  const lastNames = ["Khoury","Haddad","Abou Jaoude","Eid","Aoun","Mansour","Saab","Sleiman","Fares","Nasr","Najjar","Mouawad","Ghanem","Khalil","Chamoun","Sarkis","Saliba","Makki","Karam","Daher"];
   
-  // Weights for realistic distribution
+  // Weights for realistic Matelec distribution
   const taskPool = [
-    {a: "Clearing inbox and Slack", c: "Emails"}, {a: "Clearing inbox and Slack", c: "Emails"},
-    {a: "Client alignment call", c: "Client Call"}, {a: "Client onboarding", c: "Client Call"},
-    {a: "Writing feature spec", c: "Deep Work"}, {a: "Coding complex logic", c: "Deep Work"},
-    {a: "Sprint planning", c: "Meetings"}, {a: "All-hands sync", c: "Meetings"}, {a: "Standup", c: "Meetings"},
-    {a: "Expense reports", c: "Admin"},
+    {a: "AutoCAD drafting for 245kV substation", c: "Engineering"}, 
+    {a: "Reviewing transformer schematics", c: "Engineering"},
+    {a: "Factory floor inspection at Jbeil", c: "Manufacturing"}, 
+    {a: "Medium voltage switchgear assembly supervision", c: "Manufacturing"},
+    {a: "Project sync with ELICO Jordan team", c: "Meetings"}, 
+    {a: "Supply chain alignment for copper procurement", c: "Meetings"}, 
+    {a: "Daily department standup", c: "Meetings"},
+    {a: "High-voltage testing protocol & safety review", c: "QA/QC"},
+    {a: "Client alignment call for turnkey infrastructure", c: "Client Call"},
+    {a: "Clearing inbox and managing Outlook", c: "Emails"}, 
+    {a: "Filing project expense reports", c: "Admin"},
     {a: "Lunch break", c: "Break"}, {a: "Coffee run", c: "Break"},
-    {a: "Reviewing Q3 metrics", c: "Analysis"},
-    {a: "Drafting roadmaps", c: "Planning"}
+    {a: "Drafting Q3 energy infrastructure roadmap", c: "Planning"},
+    {a: "ESG compliance reporting", c: "Analysis"}
   ];
   
   const mock = [];
