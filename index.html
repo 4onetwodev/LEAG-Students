@@ -12,8 +12,8 @@
   h1{font-size:26px;font-weight:600;letter-spacing:-0.5px}
   h2{font-size:18px;font-weight:500;letter-spacing:-0.3px}
   h3{font-size:16px;font-weight:500}
-  input,textarea{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--input-bg);color:var(--fg);outline:none;transition:border .2s, box-shadow .2s}
-  input:focus,textarea:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(59,130,246,0.2)}
+  input,textarea,select{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:var(--input-bg);color:var(--fg);outline:none;transition:border .2s, box-shadow .2s}
+  input:focus,textarea:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 2px rgba(59,130,246,0.2)}
   button{padding:12px 20px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--fg);font-size:14px;font-family:inherit;cursor:pointer;transition:all .2s;font-weight:500}
   button:hover{background:var(--border)}
   button:disabled{opacity:0.5;cursor:not-allowed}
@@ -32,7 +32,7 @@
   .tab:hover{background:rgba(255,255,255,0.03)}
   .tab.active{border-bottom-color:var(--fg);color:var(--fg);font-weight:500}
   .slot-row{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px}
-  .slot-grid{display:grid;grid-template-columns:100px 100px 1.5fr 1fr 36px;gap:12px;align-items:end}
+  .slot-grid{display:grid;grid-template-columns:90px 90px 95px 1.5fr 1fr 36px;gap:12px;align-items:end}
   .field-label{font-size:11px;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;font-weight:500}
   .analysis-box{background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:1.5rem;font-size:15px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
   .bar-row{display:flex;align-items:center;gap:16px;margin-bottom:12px}
@@ -294,6 +294,13 @@ function addSlot(start="",end="",activity="",category="") {
     <div class="slot-grid">
       <div><div class="field-label">From</div><input type="time" value="${start}" data-field="start"/></div>
       <div><div class="field-label">To</div><input type="time" value="${end}" data-end data-field="end"/></div>
+      <div>
+        <div class="field-label">Type</div>
+        <select data-field="type" style="padding:10px 8px; appearance:none; text-align:center; cursor:pointer" title="Busy or Result">
+          <option value="B">Busy (B)</option>
+          <option value="R">Result (R)</option>
+        </select>
+      </div>
       <div class="full"><div class="field-label">Activity Detail</div><input placeholder="What did you do?" value="${activity}" data-field="activity"/></div>
       <div class="full"><div class="field-label">Task Type</div><input placeholder="e.g. Emails, Client Call, Development" value="${category}" data-field="category"/></div>
       <div style="display:flex;align-items:flex-end;padding-bottom:2px"><button onclick="removeSlot(${i})" style="border:none;background:none;color:var(--danger);font-size:24px;cursor:pointer;padding:4px;line-height:1">✕</button></div>
@@ -308,6 +315,7 @@ function getSlots() {
   return Array.from(document.querySelectorAll(".slot-row")).map(row => ({
     start: row.querySelector('[data-field="start"]').value,
     end: row.querySelector('[data-field="end"]').value,
+    type: row.querySelector('[data-field="type"]').value,
     activity: row.querySelector('[data-field="activity"]').value,
     category: row.querySelector('[data-field="category"]').value || "Uncategorized",
   }));
@@ -401,7 +409,8 @@ function renderSubmissionsTab() {
   el.innerHTML = submissions.map((s, index) => {
     const tags = s.slots.map(sl=>{
       const c = getColor(sl.category);
-      return `<span class="tag" style="color:${c};border-color:${c}55;background:${c}15">${sl.start}–${sl.end} ${sl.category}</span>`;
+      const tb = sl.type === "R" ? "✨ R" : "B";
+      return `<span class="tag" style="color:${c};border-color:${c}55;background:${c}15">${sl.start}–${sl.end} | ${tb} | ${sl.category}</span>`;
     }).join(" ");
     return `<div class="card" style="margin-bottom:16px;padding:1.25rem">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -611,7 +620,7 @@ async function runAnalysis() {
         const anonName = `Participant ${i + idx + 1}`;
         const slotText = sub.slots.map(s=>{
           const d=minutesBetween(s.start,s.end);
-          return `  ${s.start}–${s.end} (${fmtMins(d)}): ${s.activity} [Task Type: ${s.category}]`;
+          return `  ${s.start}–${s.end} (${fmtMins(d)}): [${s.type||"B"}] ${s.activity} [Task Type: ${s.category}]`;
         }).join("\n");
         return `### ${anonName}\nTime log:\n${slotText}\n`;
       }).join("\n\n");
@@ -619,6 +628,8 @@ async function runAnalysis() {
       const prompt = `You are an expert corporate time management coach. Analyze the following participants' day logs.
       
 ${batchLog}
+
+The time log indicates whether each slot was just "Busy" (B) work or achieved a true "Result" (R). Analyze the ratio of Busy vs Result time.
 
 Return ONLY a valid JSON array containing exactly ${batch.length} objects (one for each participant in order).
 Do not use markdown blocks (\`\`\`) or include any text outside the JSON array.
@@ -735,7 +746,7 @@ function loadMockData() {
       const eM = currentMin.toString().padStart(2, '0');
       const endStr = `${eH}:${eM}`;
       
-      slots.push({start: startStr, end: endStr, activity: task.a, category: task.c});
+      slots.push({start: startStr, end: endStr, type: Math.random() > 0.6 ? "R" : "B", activity: task.a, category: task.c});
     }
     
     mock.push({
