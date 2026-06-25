@@ -488,13 +488,21 @@ function renderIndividualTab() {
 function renderAggregateTab() {
   const el = document.getElementById("tab-aggregate");
   if (!aggregateAnalysis) { el.innerHTML=`<p style="color:var(--text-muted);font-size:15px;text-align:center;padding:2rem">Run the analysis to see the Matelec overview.</p>`; return; }
-  const allSlots = submissions.flatMap(s=>s.slots);
   const catTotals={};
-  allSlots.forEach(sl=>{
-    const d=minutesBetween(sl.start,sl.end);
-    if(d>0){
-      const cat = sl.category.trim() || "Uncategorized";
-      catTotals[cat]=(catTotals[cat]||0)+d;
+  submissions.forEach(sub => {
+    const data = participantAnalyses[sub.name];
+    if (data && data.categories && typeof data.categories === 'object') {
+      Object.entries(data.categories).forEach(([c, m]) => {
+        catTotals[c] = (catTotals[c] || 0) + Number(m);
+      });
+    } else {
+      sub.slots.forEach(sl => {
+        const d = minutesBetween(sl.start, sl.end);
+        if (d > 0) {
+          const cat = sl.category.trim() || "Uncategorized";
+          catTotals[cat] = (catTotals[cat] || 0) + d;
+        }
+      });
     }
   });
   const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
@@ -646,7 +654,7 @@ JSON Object Structure for each participant:
   "recommendations": ["<Actionable tip 1>", "<Actionable tip 2>", "<Actionable tip 3>"],
   "categories": { "CategoryName": <total minutes> }
 }
-Also, if any Task Type is 'Uncategorized' or missing, automatically infer its category based on the activity description and assign it a standard category (e.g. Engineering, Admin, Meetings, Emails, etc). Return the final total minutes spent in each category as the "categories" object.`;
+CRITICAL: Ignore the provided "Task Type" entirely as participants often fill it with garbage text. Read the activity description and assign EVERY time slot to one of these standard categories: [Engineering, Admin, Meetings, Emails, Deep Work, Break, Planning, QA/QC]. Do not use any other category names. Return the final total minutes spent in each standard category as the "categories" object.`;
 
       const responseText = await callClaude(prompt);
       const data = extractJSON(responseText);
