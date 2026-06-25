@@ -232,19 +232,17 @@ function getColor(taskType) {
   return c;
 }
 
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxvYS9xTkBJm7Ub1OiDdIKQs5Gx3PNSFdQeo4_TvTE9pnFhQ81lLKTul55SSGTrLJTr/exec";
 let anthropicKey = localStorage.getItem("leag_api_key") || "";
-let submissions = JSON.parse(localStorage.getItem("leag_submissions")||"[]");
+let submissions = [];
 let participantAnalyses = JSON.parse(localStorage.getItem("leag_analyses")||"{}");
-let aggregateAnalysis = localStorage.getItem("leag_aggregate")||"";
+let aggregateAnalysis;
+try { aggregateAnalysis = JSON.parse(localStorage.getItem("leag_aggregate")||"null"); } catch(e) { aggregateAnalysis = localStorage.getItem("leag_aggregate"); }
 let slotCount = 0;
 
-// Preload colors for existing data
-submissions.flatMap(s=>s.slots).forEach(sl => getColor(sl.category));
-
 function save() {
-  localStorage.setItem("leag_submissions", JSON.stringify(submissions));
   localStorage.setItem("leag_analyses", JSON.stringify(participantAnalyses));
-  localStorage.setItem("leag_aggregate", aggregateAnalysis);
+  localStorage.setItem("leag_aggregate", typeof aggregateAnalysis === 'object' ? JSON.stringify(aggregateAnalysis) : aggregateAnalysis);
 }
 
 function go(screen) {
@@ -326,27 +324,38 @@ function fmtMins(m) {
   return h>0?`${h}h ${r}m`:`${r}m`;
 }
 
-function submitDay() {
+async function submitDay() {
   const name = document.getElementById("p-name").value.trim();
   const date = document.getElementById("p-date").value;
   if (!name) return alert("Please enter your name.");
   const slots = getSlots();
   if (!slots.length) return alert("Please add at least one time slot.");
   
-  // Basic validation
   for(let s of slots) {
     if(!s.start || !s.end) return alert("Please fill in start and end times for all slots.");
     if(minutesBetween(s.start, s.end) < 0) return alert("End time cannot be before start time.");
   }
 
   const entry = { name, date, slots, submittedAt: new Date().toISOString() };
-  submissions = [...submissions.filter(s=>!(s.name===name&&s.date===date)), entry];
   
-  // Pre-calculate colors for new inputs so they are ready
-  slots.forEach(sl => getColor(sl.category));
+  const btn = document.querySelector("#screen-participant .btn-primary");
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = "Submitting securely to cloud...";
+
+  try {
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(entry)
+    });
+    go("submitted");
+  } catch(e) {
+    alert("Failed to connect to database. Please check your internet connection.");
+  }
   
-  save();
-  go("submitted");
+  btn.disabled = false;
+  btn.textContent = origText;
 }
 
 function lookupAnalysis() {
@@ -368,8 +377,18 @@ function formatAnalysis(text) {
     .replace(/^#{1,3}\s*/gm,"");
 }
 
-function refreshInstructor() {
-  document.getElementById("sub-count").textContent = `${submissions.length} submission${submissions.length!==1?"s":""}`;
+async function refreshInstructor() {
+  const countEl = document.getElementById("sub-count");
+  countEl.textContent = "Fetching from cloud...";
+  try {
+    const res = await fetch(GOOGLE_SCRIPT_URL);
+    submissions = await res.json();
+    submissions.flatMap(s=>s.slots).forEach(sl => getColor(sl.category));
+  } catch(e) {
+    console.error("Failed to load submissions", e);
+    alert("Failed to load submissions from Google Sheets.");
+  }
+  countEl.textContent = `${submissions.length} submission${submissions.length!==1?"s":""}`;
   renderSubmissionsTab();
   renderIndividualTab();
   renderAggregateTab();
@@ -722,8 +741,10 @@ function loadMockData() {
 
   submissions = mock;
   mock.flatMap(s=>s.slots).forEach(sl => getColor(sl.category));
-  save();
-  refreshInstructor();
+  document.getElementById("sub-count").textContent = `${submissions.length} mock submissions loaded`;
+  renderSubmissionsTab();
+  renderIndividualTab();
+  renderAggregateTab();
   alert("20 mock submissions generated and loaded! You can now run the AI Analysis.");
 }
 </script>
