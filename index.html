@@ -428,14 +428,18 @@ function renderIndividualTab() {
   el.innerHTML = submissions.map((sub, index) => {
     const data = participantAnalyses[sub.name];
     if (!data) return "";
-    const catTotals={};
-    sub.slots.forEach(sl=>{
-      const d=minutesBetween(sl.start,sl.end);
-      if(d>0){
-        const cat = sl.category.trim() || "Uncategorized";
-        catTotals[cat]=(catTotals[cat]||0)+d;
-      }
-    });
+    let catTotals={};
+    if (data.categories && typeof data.categories === 'object') {
+      catTotals = data.categories;
+    } else {
+      sub.slots.forEach(sl=>{
+        const d=minutesBetween(sl.start,sl.end);
+        if(d>0){
+          const cat = sl.category.trim() || "Uncategorized";
+          catTotals[cat]=(catTotals[cat]||0)+d;
+        }
+      });
+    }
     const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
     const bars=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,m])=>{
       const color = getColor(c);
@@ -639,8 +643,10 @@ JSON Object Structure for each participant:
   "score": <number 1-10>,
   "drain": "<One sentence identifying the biggest time drain>",
   "positives": "<One sentence on their best productivity pattern>",
-  "recommendations": ["<Actionable tip 1>", "<Actionable tip 2>", "<Actionable tip 3>"]
-}`;
+  "recommendations": ["<Actionable tip 1>", "<Actionable tip 2>", "<Actionable tip 3>"],
+  "categories": { "CategoryName": <total minutes> }
+}
+Also, if any Task Type is 'Uncategorized' or missing, automatically infer its category based on the activity description and assign it a standard category (e.g. Engineering, Admin, Meetings, Emails, etc). Return the final total minutes spent in each category as the "categories" object.`;
 
       const responseText = await callClaude(prompt);
       const data = extractJSON(responseText);
@@ -657,13 +663,21 @@ JSON Object Structure for each participant:
       }
     }
 
-    const allSlots = submissions.flatMap(s=>s.slots);
     const catTotals={};
-    allSlots.forEach(sl=>{
-      const d=minutesBetween(sl.start,sl.end);
-      if(d>0){
-        const cat = sl.category.trim() || "Uncategorized";
-        catTotals[cat]=(catTotals[cat]||0)+d;
+    submissions.forEach(sub => {
+      const data = participantAnalyses[sub.name];
+      if (data && data.categories && typeof data.categories === 'object') {
+        Object.entries(data.categories).forEach(([c, m]) => {
+          catTotals[c] = (catTotals[c] || 0) + Number(m);
+        });
+      } else {
+        sub.slots.forEach(sl => {
+          const d = minutesBetween(sl.start, sl.end);
+          if (d > 0) {
+            const cat = sl.category.trim() || "Uncategorized";
+            catTotals[cat] = (catTotals[cat] || 0) + d;
+          }
+        });
       }
     });
     const total=Object.values(catTotals).reduce((a,b)=>a+b,0);
